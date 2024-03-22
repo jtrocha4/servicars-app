@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import IconUser from '../../public/icon/IconUser'
 import IconBack from '../../public/icon/IconBack'
 import ModalNewVehicle from '../components/ModalNewVehicle'
 import { useNavigate } from 'react-router-dom'
 import IconAdd from '../../public/icon/IconAdd'
+import { workOrderContext } from '../contexts/workOrder'
 
 const PageNewOrder = () => {
   const navigate = useNavigate()
@@ -12,12 +13,7 @@ const PageNewOrder = () => {
 
   ])
 
-  const [workOrder, setWorkOrder] = useState({
-    servicios: [],
-    descuento: 0,
-    subtotal: 0,
-    total: 0
-  })
+  const { newWorkOrder, setNewWorkOrder } = useContext(workOrderContext)
 
   const [form, setForm] = useState({
     requerimiento: 'Reparacion',
@@ -36,17 +32,15 @@ const PageNewOrder = () => {
   }
 
   const handleWorkOrder = (event) => {
-    setWorkOrder({
-      ...workOrder,
+    setNewWorkOrder({
+      ...newWorkOrder,
       [event.target.name]: event.target.value
     })
 
-    setWorkOrder(prevWorkOrder => {
+    setNewWorkOrder(prevWorkOrder => {
       const newTotal = prevWorkOrder.subtotal - (prevWorkOrder.subtotal * (prevWorkOrder.descuento / 100))
       return {
-        servicios: prevWorkOrder.servicios,
-        descuento: prevWorkOrder.descuento,
-        subtotal: prevWorkOrder.subtotal,
+        ...prevWorkOrder,
         total: newTotal
       }
     })
@@ -58,7 +52,8 @@ const PageNewOrder = () => {
       const totalService = parseFloat(form.cantidad) * parseFloat(form.valor)
       form.total = totalService
       setServices([...services, form])
-      setWorkOrder(prevWorkOrder => {
+
+      setNewWorkOrder(prevWorkOrder => {
         const newSubtotal = prevWorkOrder.subtotal + totalService
         const newTotal = newSubtotal - (newSubtotal * (prevWorkOrder.descuento / 100))
 
@@ -66,10 +61,22 @@ const PageNewOrder = () => {
           ...prevWorkOrder,
           servicios: [...prevWorkOrder.servicios, form],
           subtotal: newSubtotal,
-          descuento: prevWorkOrder.descuento,
           total: newTotal
         }
       })
+
+      // setNewWorkOrder(prevWorkOrder => {
+      //   const newSubtotal = prevWorkOrder.subtotal + totalService
+      //   const newTotal = newSubtotal - (newSubtotal * (prevWorkOrder.descuento / 100))
+
+      //   return {
+      //     ...prevWorkOrder,
+      //     servicios: [...prevWorkOrder.servicios, form],
+      //     subtotal: newSubtotal,
+      //     descuento: prevWorkOrder.descuento,
+      //     total: newTotal
+      //   }
+      // })
 
       setForm({
         requerimiento: 'Reparacion',
@@ -118,7 +125,7 @@ const PageNewOrder = () => {
 
             <fieldset>
               <input className='w-11/12 h-10 me-2 mb-2 p-2 border-2 border-gray-300 rounded-lg' type='text' placeholder='Descripcion' name='descripcion' onChange={handleChange} value={form.descripcion} />
-              <input className='w-64 h-10 me-4 p-2 border-2 border-gray-300 rounded-lg' type='number' placeholder='Cantidad' name='cantidad' onChange={handleChange} value={form.cantidad} />
+              <input className='w-64 h-10 me-4 p-2 border-2 border-gray-300 rounded-lg' type='number' min={1} placeholder='Cantidad' name='cantidad' onChange={handleChange} value={form.cantidad} />
               <input className='w-64 h-10 me-4 p-2 border-2 border-gray-300 rounded-lg' type='number' placeholder='Valor c/u' name='valor' onChange={handleChange} value={form.valor} />
               <button className='h-10 px-4 py-2 font-semibold rounded-md bg-[#75C5B1] text-white hover:scale-105 hover:bg-[#75c5b1bb]' title='Agregar' onClick={handleAddService}>
                 <IconAdd classname='display: inline-block' width={28} stroke='#FFFFFF' />
@@ -170,16 +177,16 @@ const PageNewOrder = () => {
           <div className='flex justify-between w-11/12'>
             <form action=''>
               <label className='display: block' htmlFor='descuento'>Descuento</label>
-              <input className='w-14 h-8 me-2 p-1 border-2 border-gray-300 rounded-lg' type='number' name='descuento' min={0} max={100} onChange={handleWorkOrder} value={workOrder.descuento} />
+              <input className='w-14 h-8 me-2 p-1 border-2 border-gray-300 rounded-lg' type='number' name='descuento' min={0} max={100} onChange={handleWorkOrder} value={newWorkOrder.descuento} />
               <span>%</span>
             </form>
             <div>
               <h5>Subtotal</h5>
-              <span>{workOrder.subtotal}</span>
+              <span>{newWorkOrder.subtotal}</span>
             </div>
             <div>
               <h5>Total</h5>
-              <span>{workOrder.total}</span>
+              <span>{newWorkOrder.total}</span>
             </div>
           </div>
 
@@ -190,6 +197,14 @@ const PageNewOrder = () => {
           </div>
         </section>
       </div>
+      <footer className='flex justify-end gap-2 mt-4'>
+        <button className='h-10 px-6 font-semibold rounded-md bg-gray-400 text-white hover:scale-105 hover:bg-gray-300' type='button'>
+          Cancelar
+        </button>
+        <button className='h-10 px-6 font-semibold rounded-md bg-[#FF664C] text-white hover:scale-105 hover:bg-[#ff674ce9]' type='submit'>
+          Confirmar orden
+        </button>
+      </footer>
     </>
   )
 }
