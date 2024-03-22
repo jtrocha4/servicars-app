@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import IconUser from '../../public/icon/IconUser'
 import IconFingerprint from '../../public/icon/IconFingerprint'
 import IconPhone from '../../public/icon/IconPhone'
@@ -6,11 +6,14 @@ import IconEmail from '../../public/icon/IconEmail'
 import IconCompany from '../../public/icon/IconCompany'
 import { useNavigate } from 'react-router-dom'
 import IconAddress from '../../public/icon/IconAddress'
+import { workOrderContext } from '../contexts/workOrder'
 
 const ModalNewOrder = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const navigate = useNavigate()
+
+  const { setNewWorkOrder } = useContext(workOrderContext)
 
   const [form, setForm] = useState({
     nombre: '',
@@ -31,6 +34,22 @@ const ModalNewOrder = () => {
         form.empresa = 'n/a'
         form.nit = 'n/a'
       }
+      setNewWorkOrder(prevWorkOrder => {
+        return {
+          ...prevWorkOrder,
+          cliente: {
+            nombre: form.nombre,
+            primerApellido: form.primerApellido,
+            segundoApellido: form.segundoApellido,
+            id: form.id,
+            telefono: form.telefono,
+            correo: form.correo,
+            direccion: form.direccion,
+            empresa: form.empresa,
+            nitEmpresa: form.nit
+          }
+        }
+      })
       navigate('/newOrder')
     }
   }
